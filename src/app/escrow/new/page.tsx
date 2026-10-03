@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { ArrowLeft, Loader2 } from "lucide-react";
-import { useInitializeEscrow, useSendTransaction } from "@trustless-work/escrow/hooks";
+import { useInitializeEscrow } from "@trustless-work/escrow/hooks";
 import type { InitializeSingleReleaseEscrowPayload } from "@trustless-work/escrow/types";
 import { useForm } from "react-hook-form";
 import { AppHeader } from "@/components/app-header";
@@ -14,7 +14,8 @@ import { useWalletContext } from "@/components/tw-blocks/providers/WalletProvide
 import { isValidWallet } from "@/components/tw-blocks/wallet-kit/validators";
 import { USDC_TESTNET } from "@/lib/constants";
 import type { GlossaryKey } from "@/lib/glossary";
-import { signXdr } from "@/lib/sign";
+import { errorMessage } from "@/lib/errors";
+import { useSignAndSend } from "@/lib/use-sign-and-send";
 
 type FormValues = {
   title: string;
@@ -50,7 +51,7 @@ export default function NewEscrowPage() {
   const { walletAddress } = useWalletContext();
   const router = useRouter();
   const { deployEscrow } = useInitializeEscrow();
-  const { sendTransaction } = useSendTransaction();
+  const signAndSend = useSignAndSend();
   const {
     register,
     handleSubmit,
@@ -93,14 +94,9 @@ export default function NewEscrowPage() {
       const { unsignedTransaction } = await deployEscrow(payload, "single-release");
       if (!unsignedTransaction) throw new Error("A API não retornou a transação para assinar.");
 
-      // 2. O usuário assina na carteira
-      const signedXdr = await signXdr(unsignedTransaction, walletAddress);
-
-      // 3. Envia e só então o contrato passa a existir on-chain
-      const data = await sendTransaction(signedXdr);
-      if (data.status !== "SUCCESS" || !("contractId" in data) || !data.contractId) {
-        throw new Error(data.message || "A transação não foi confirmada.");
-      }
+      // 2 e 3. Assina na carteira e envia: só então o contrato passa a existir on-chain
+      const data = await signAndSend(unsignedTransaction);
+      if (!("contractId" in data) || !data.contractId) throw new Error("O contrato não foi retornado pela API.");
 
       toast.success("Escrow criado!");
       router.push(`/escrow/${encodeURIComponent(data.contractId)}`);
@@ -267,17 +263,4 @@ function Section({
       <div className="space-y-4">{children}</div>
     </section>
   );
-}
-
-function errorMessage(error: unknown) {
-  // Erros do axios trazem o corpo da API em response.data (ex.: { message, details })
-  const data = (error as { response?: { data?: { message?: string; details?: Record<string, string[]> } } })?.response?.data;
-  if (data?.details) {
-    const first = Object.values(data.details).flat()[0];
-    if (first) return first;
-  }
-  const raw = data?.message ?? (error instanceof Error ? error.message : typeof error === "string" ? error : "");
-  if (/reject|denied|declined|cancel/i.test(raw)) return "Assinatura recusada na carteira.";
-  if (/401|unauthor/i.test(raw)) return "API key inválida ou ausente (NEXT_PUBLIC_API_KEY).";
-  return raw || "Não foi possível criar o escrow.";
 }

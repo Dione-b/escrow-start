@@ -18,6 +18,14 @@ export const GLOSSARY = {
   receiver: "Endereço que recebe o pagamento. Precisa ter a trustline do USDC, senão o deploy é recusado.",
   platformAddress: "Endereço da plataforma: recebe a taxa e é quem pode atualizar o escrow. Também precisa da trustline.",
 
+  // Estado do escrow
+  balance: "Quanto USDC está dentro do contrato agora. Fica zerado antes do Fund e depois da liberação.",
+  evidence: "Prova do trabalho feito (link, texto, hash…). Fica registrada junto ao milestone para o approver conferir.",
+  milestoneStatus: "Estado do milestone: pendente até o service provider marcar como concluído.",
+  approved: "Marca irreversível feita pelo approver. Sem ela, o contrato não libera os fundos.",
+  released: "Indica que os fundos já saíram do contrato para o receiver. É o fim do fluxo.",
+  validateOnChain: "Os dados vêm direto da blockchain (não do cache do indexer), então sempre refletem o estado real. Por isso podem demorar um pouco mais.",
+
   // Conceitos
   trustline: "Na Stellar, uma conta só pode receber um token (como o USDC) se criou uma trustline para ele. Aqui usamos o USDC da testnet.",
   contractId: "Endereço do contrato Soroban do escrow. Começa com C e tem 56 caracteres. Aparece depois do deploy.",
