@@ -7,7 +7,8 @@ A lógica de cada etapa está marcada com `// TODO (aula)` — vamos implementar
 - Node 20+
 - Extensão [Freighter](https://freighter.app) configurada em **Testnet**
 - Conta financiada com XLM via [friendbot](https://laboratory.stellar.org/#account-creator?network=test)
-- Trustline de **USDC testnet** (`GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5`) e saldo de USDC ([faucet Circle](https://faucet.circle.com))
+- Trustline de **USDC testnet** (`GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5`) na sua conta, criada no [Stellar Lab](https://laboratory.stellar.org)
+- Saldo de USDC: **100 USDC grátis** no [faucet Sozu](https://faucet.sozu.capital/) (informe o seu endereço `G…`; a trustline precisa existir antes). Alternativa: [faucet Circle](https://faucet.circle.com)
 - API key em https://dapp.trustlesswork.com
 
 ## Setup

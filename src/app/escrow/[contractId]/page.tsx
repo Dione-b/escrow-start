@@ -16,6 +16,7 @@ import type { Roles, SingleReleaseMilestone } from "@trustless-work/escrow/types
 import { AppHeader } from "@/components/app-header";
 import { HelpTip } from "@/components/help-tip";
 import { useWalletContext } from "@/components/tw-blocks/providers/WalletProvider";
+import { LINKS } from "@/lib/constants";
 import { errorMessage } from "@/lib/errors";
 import type { GlossaryKey } from "@/lib/glossary";
 import { useSignAndSend } from "@/lib/use-sign-and-send";
@@ -347,6 +348,16 @@ export default function EscrowPage({ params }: { params: Promise<{ contractId: s
                     {pending === s.id ? "Processando…" : s.done ? "Concluída" : "Executar"}
                   </button>
                   {reason && !s.done && <p className="text-xs text-muted-foreground">{reason}</p>}
+                  {s.id === "fund" && !s.done && (
+                    <a
+                      href={LINKS.usdcFaucet}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex items-center gap-1 text-xs font-medium underline underline-offset-4"
+                    >
+                      Sem USDC? Pegue 100 no faucet <ExternalLink className="size-3" aria-hidden />
+                    </a>
+                  )}
                 </div>
               );
             })}

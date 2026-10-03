@@ -8,5 +8,13 @@ export const USDC_TESTNET = {
   address: "GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5",
 };
 
+// Links úteis para a aula (contas de teste)
+export const LINKS = {
+  friendbot: "https://laboratory.stellar.org/#account-creator?network=test",
+  // Entrega 100 USDC de testnet (SAC da Circle) para um endereço G…/C…. A conta G… precisa da trustline antes.
+  usdcFaucet: "https://faucet.sozu.capital/",
+  circleFaucet: "https://faucet.circle.com",
+};
+
 // Contract ID Soroban: "C" + 55 caracteres base32
 export const isValidContractId = (id: string) => /^C[A-Z2-7]{55}$/.test(id);

@@ -3,11 +3,11 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { ArrowRight, Check } from "lucide-react";
+import { ArrowRight, Check, ExternalLink } from "lucide-react";
 import { AppHeader } from "@/components/app-header";
 import { HelpTip } from "@/components/help-tip";
 import { useWalletContext } from "@/components/tw-blocks/providers/WalletProvider";
-import { isValidContractId } from "@/lib/constants";
+import { LINKS, isValidContractId } from "@/lib/constants";
 import type { GlossaryKey } from "@/lib/glossary";
 
 const FLOW: { title: string; who: string; term: GlossaryKey }[] = [
@@ -18,11 +18,12 @@ const FLOW: { title: string; who: string; term: GlossaryKey }[] = [
   { title: "Liberar fundos", who: "Release signer", term: "stepRelease" },
 ];
 
-const PREREQS = [
-  "Extensão Freighter configurada na Testnet",
-  "Conta com XLM de teste (friendbot)",
-  "Trustline e saldo de USDC testnet",
-  "API key no arquivo .env.local",
+const PREREQS: { text: string; link?: { label: string; href: string } }[] = [
+  { text: "Extensão Freighter configurada na Testnet" },
+  { text: "Conta com XLM de teste", link: { label: "friendbot", href: LINKS.friendbot } },
+  { text: "Trustline de USDC testnet na sua conta (Stellar Lab)" },
+  { text: "Saldo de USDC testnet (100 USDC grátis)", link: { label: "faucet Sozu", href: LINKS.usdcFaucet } },
+  { text: "API key no arquivo .env.local" },
 ];
 
 export default function HomePage() {
@@ -82,9 +83,24 @@ export default function HomePage() {
             <h2 className="text-lg font-semibold">Antes de começar</h2>
             <ul className="space-y-2 text-sm">
               {PREREQS.map((item) => (
-                <li key={item} className="flex items-start gap-2">
+                <li key={item.text} className="flex items-start gap-2">
                   <Check className="mt-0.5 size-4 shrink-0" aria-hidden />
-                  {item}
+                  <span>
+                    {item.text}
+                    {item.link && (
+                      <>
+                        {" · "}
+                        <a
+                          href={item.link.href}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="inline-flex items-center gap-1 font-medium underline underline-offset-4"
+                        >
+                          {item.link.label} <ExternalLink className="size-3" aria-hidden />
+                        </a>
+                      </>
+                    )}
+                  </span>
                 </li>
               ))}
             </ul>
