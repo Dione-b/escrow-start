@@ -18,6 +18,7 @@ import { HelpTip } from "@/components/help-tip";
 import { useWalletContext } from "@/components/tw-blocks/providers/WalletProvider";
 import { LINKS } from "@/lib/constants";
 import { errorMessage } from "@/lib/errors";
+import { escrowStatus } from "@/lib/escrow-status";
 import type { GlossaryKey } from "@/lib/glossary";
 import { useSignAndSend } from "@/lib/use-sign-and-send";
 
@@ -245,7 +246,7 @@ export default function EscrowPage({ params }: { params: Promise<{ contractId: s
                 <Stat
                   label="Milestone"
                   term="milestoneStatus"
-                  value={released ? "Liberado" : approved ? "Aprovado" : completed ? "Concluído" : "Pendente"}
+                  value={escrowStatus(escrow)}
                 />
                 <Stat label="Taxa" term="platformFee" value={`${escrow.platformFee}%`} />
               </dl>

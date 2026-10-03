@@ -6,6 +6,7 @@ import { useState } from "react";
 import { ArrowRight, Check, ExternalLink } from "lucide-react";
 import { AppHeader } from "@/components/app-header";
 import { HelpTip } from "@/components/help-tip";
+import { MyEscrows } from "@/components/my-escrows";
 import { useWalletContext } from "@/components/tw-blocks/providers/WalletProvider";
 import { LINKS, isValidContractId } from "@/lib/constants";
 import type { GlossaryKey } from "@/lib/glossary";
@@ -139,6 +140,8 @@ export default function HomePage() {
             </button>
           </form>
         </section>
+
+        <MyEscrows />
       </main>
     </>
   );
