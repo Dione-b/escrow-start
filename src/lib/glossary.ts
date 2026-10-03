@@ -26,7 +26,7 @@ export const GLOSSARY = {
   released: "Indica que os fundos já saíram do contrato para o receiver. É o fim do fluxo.",
   validateOnChain: "Os dados vêm direto da blockchain (não do cache do indexer), então sempre refletem o estado real. Por isso podem demorar um pouco mais.",
 
-  myEscrows: "Lista os escrows em que a sua carteira foi a signatária (quem assinou o deploy). Os dados vêm do indexer da Trustless Work.",
+  myEscrows: "Escrows cujo deploy foi assinado pela sua carteira. Os dados vêm do indexer da Trustless Work.",
 
   // Conceitos
   trustline: "Na Stellar, uma conta só pode receber um token (como o USDC) se criou uma trustline para ele. Aqui usamos o USDC da testnet.",

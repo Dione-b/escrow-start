@@ -1,14 +1,28 @@
 "use client";
 
 import Link from "next/link";
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { ListChecks, Loader2 } from "lucide-react";
-import { useGetEscrowsFromIndexerBySigner } from "@trustless-work/escrow/hooks";
-import type { Roles } from "@trustless-work/escrow/types";
+import { useGetEscrowsFromIndexerByRole, useGetEscrowsFromIndexerBySigner } from "@trustless-work/escrow/hooks";
+import type { Role, Roles } from "@trustless-work/escrow/types";
 import { HelpTip } from "@/components/help-tip";
 import { useWalletContext } from "@/components/tw-blocks/providers/WalletProvider";
 import { errorMessage } from "@/lib/errors";
 import { escrowStatus } from "@/lib/escrow-status";
+import { GLOSSARY, type GlossaryKey } from "@/lib/glossary";
+
+type Filter = "signer" | Exclude<Role, "signer">;
+
+const FILTERS: { value: Filter; label: string }[] = [
+  { value: "signer", label: "Criados por mim" },
+  { value: "approver", label: "Approver" },
+  { value: "serviceProvider", label: "Service Provider" },
+  { value: "releaseSigner", label: "Release Signer" },
+  { value: "disputeResolver", label: "Dispute Resolver" },
+  { value: "receiver", label: "Receiver" },
+  { value: "platformAddress", label: "Platform" },
+];
 
 const ROLE_LABELS: Record<string, string> = {
   approver: "Approver",
@@ -32,21 +46,29 @@ const short = (a: string) => `${a.slice(0, 6)}…${a.slice(-4)}`;
 export function MyEscrows() {
   const { walletAddress } = useWalletContext();
   const { getEscrowsBySigner } = useGetEscrowsFromIndexerBySigner();
+  const { getEscrowsByRole } = useGetEscrowsFromIndexerByRole();
+  const [filter, setFilter] = useState<Filter>("signer");
+  // Só começa a buscar depois do primeiro clique no botão; a partir daí, trocar o filtro refaz a busca.
+  const [requested, setRequested] = useState(false);
 
-  // enabled: false → a consulta só roda quando o usuário clica no botão (refetch).
+  const filterLabel = FILTERS.find((f) => f.value === filter)!.label;
+
   const { data, isFetching, isError, error, isFetched, refetch } = useQuery({
-    queryKey: ["my-escrows", walletAddress],
+    queryKey: ["my-escrows", walletAddress, filter],
     queryFn: async () => {
-      const result = await getEscrowsBySigner({
-        signer: walletAddress!,
-        orderBy: "createdAt",
-        orderDirection: "desc",
-      });
+      const common = { orderBy: "createdAt", orderDirection: "desc" } as const;
+      // "Criados por mim" = o signer do deploy; os demais filtram pelo papel que a carteira ocupa no escrow.
+      const result =
+        filter === "signer"
+          ? await getEscrowsBySigner({ signer: walletAddress!, ...common })
+          : await getEscrowsByRole({ role: filter, roleAddress: walletAddress!, ...common });
       return Array.isArray(result) ? result : [];
     },
-    enabled: false,
+    enabled: requested && !!walletAddress,
     retry: false,
   });
+
+  const onList = () => (requested ? refetch() : setRequested(true));
 
   return (
     <section className="space-y-4">
@@ -55,17 +77,37 @@ export function MyEscrows() {
           <h2 className="flex items-center gap-1.5 text-lg font-semibold">
             Meus escrows <HelpTip term="myEscrows" label="meus escrows" />
           </h2>
-          <p className="text-sm text-muted-foreground">Escrows que a sua carteira criou, do mais novo para o mais antigo.</p>
+          <p className="text-sm text-muted-foreground">Do mais novo para o mais antigo. Escolha abaixo o papel da sua carteira.</p>
         </div>
         <button
-          onClick={() => refetch()}
+          onClick={onList}
           disabled={!walletAddress || isFetching}
           className="inline-flex h-10 items-center gap-2 rounded-md border px-4 text-sm font-medium transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-50"
         >
           {isFetching ? <Loader2 className="size-4 animate-spin" aria-hidden /> : <ListChecks className="size-4" aria-hidden />}
-          {isFetching ? "Buscando…" : isFetched ? "Atualizar lista" : "Listar meus escrows"}
+          {isFetching ? "Buscando…" : requested ? "Atualizar lista" : "Listar meus escrows"}
         </button>
       </div>
+
+      <div role="radiogroup" aria-label="Filtrar por papel" className="flex flex-wrap gap-2">
+        {FILTERS.map((f) => (
+          <button
+            key={f.value}
+            type="button"
+            role="radio"
+            aria-checked={filter === f.value}
+            onClick={() => setFilter(f.value)}
+            className={`h-8 rounded-full border px-3 text-xs font-medium transition-colors ${
+              filter === f.value ? "border-foreground bg-foreground text-background" : "hover:bg-muted"
+            }`}
+          >
+            {f.label}
+          </button>
+        ))}
+      </div>
+      <p className="text-xs text-muted-foreground">
+        {filter === "signer" ? GLOSSARY.myEscrows : GLOSSARY[filter as GlossaryKey]}
+      </p>
 
       {!walletAddress && <p className="text-sm text-muted-foreground">Conecte a carteira para listar os seus escrows.</p>}
 
@@ -77,8 +119,9 @@ export function MyEscrows() {
 
       {isFetched && !isError && data?.length === 0 && (
         <p className="rounded-xl border border-dashed p-6 text-center text-sm text-muted-foreground">
-          Nenhum escrow encontrado para esta carteira. Crie um em “Criar novo escrow”. Se acabou de criar, o indexer pode
-          levar alguns segundos.
+          {filter === "signer"
+            ? "Nenhum escrow criado por esta carteira. Crie um em “Criar novo escrow”. Se acabou de criar, o indexer pode levar alguns segundos."
+            : `Nenhum escrow em que esta carteira seja ${filterLabel}.`}
         </p>
       )}
 
